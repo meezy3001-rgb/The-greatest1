@@ -1,7 +1,21 @@
 import Head from 'next/head'
+import { loadStripe } from '@stripe/stripe-js'
 import styles from '../styles/Home.module.css'
 
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+
 export default function Home() {
+  const handleCheckout = async (priceId) => {
+    const stripe = await stripePromise
+    const response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId }),
+    })
+    const { sessionId } = await response.json()
+    await stripe.redirectToCheckout({ sessionId })
+  }
+
   return (
     <>
       <Head>
@@ -122,7 +136,7 @@ export default function Home() {
                 <li>✗ Automation</li>
                 <li>✗ API access</li>
               </ul>
-              <button className={styles.btnSecondary}>Coming Soon</button>
+              <button className={styles.btnSecondary} onClick={() => handleCheckout(process.env.NEXT_PUBLIC_STRIPE_SIGNALS_PRICE_ID)}>Subscribe →</button>
             </div>
             <div className={`${styles.pricingCard} ${styles.pricingFeatured}`}>
               <div className={styles.pricingBadge}>MOST POPULAR</div>
@@ -136,7 +150,7 @@ export default function Home() {
                 <li>✓ API access</li>
                 <li>✓ Priority support</li>
               </ul>
-              <button className={styles.btnPrimary}>Coming Soon</button>
+              <button className={styles.btnPrimary} onClick={() => handleCheckout(process.env.NEXT_PUBLIC_STRIPE_AUTOMATED_PRICE_ID)}>Subscribe →</button>
             </div>
             <div className={styles.pricingCard}>
               <div className={styles.pricingTier}>INSTITUTIONAL</div>
@@ -149,7 +163,7 @@ export default function Home() {
                 <li>✓ White-label option</li>
                 <li>✓ 1-on-1 onboarding</li>
               </ul>
-              <button className={styles.btnSecondary}>Coming Soon</button>
+              <button className={styles.btnSecondary} onClick={() => handleCheckout(process.env.NEXT_PUBLIC_STRIPE_INSTITUTIONAL_PRICE_ID)}>Subscribe →</button>
             </div>
           </div>
         </section>
